@@ -1,0 +1,28 @@
+
+// IMPORTANT: no spaces between the " = " characters, spaces in dataset names are ok
+
+dataset_name=test1
+
+output_path=/home/andrewj/Projects/data/outputs/
+
+background_path=/home/andrewj/Pictures
+
+max_objects_per_canvas=5
+
+canvases_per_frame=10
+
+// chances of modifications on the canvas in %
+
+canvas_lower_resolution=15
+
+canvas_blurr=15
+
+canvas_change_brightness=30
+
+
+// chances of modification on the object of interest in %
+
+object_saturation=40
+
+object_affine_transform=30
+

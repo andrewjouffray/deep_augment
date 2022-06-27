@@ -1,0 +1,14 @@
+Here are the steps to create the mask model
+
+1 - generate the shapes
+2 - augment the shapes
+3 - add label.pbtxt
+4 - create the folds: python dataprep.py <path to output folder> <number of folds> <make tf records? (true / false)>
+5 - create the json files: python labelMe2Coco.py labelme_images = <path to images folder> --output=<file.json>
+6 - create the record files: python labelMe2Coco.py labelme_images = <path to images folder> --output=<file.json>
+n mask_tf_record_from_json.py --logtostderr --train_image_dir=/home/ajouffray/Data/output_soft_4/fold0/train_img --test_image_dir=/home/ajouffray/Data/output_soft_4/fold0/test_img/ --train_annotations_file=/home/ajouffray/Data/output_soft_4/train.json --test_annotations_file=/home/ajouffray/Data/output_soft_4/test.json --include_masks=True --output_dir=/home/ajouffray/Data/output_soft_4/
+7 - begin training on the record files:
+7.1 - launch the save model script
+8 - export all the models
+9 - test all the models on the test dataset
+

@@ -1,0 +1,1 @@
+g++ -fopenmp cv_test1.cpp  -o  newTestOutput `pkg-config --cflags --libs opencv`

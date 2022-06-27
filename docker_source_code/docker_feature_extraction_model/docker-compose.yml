@@ -1,0 +1,20 @@
+version: '3'
+
+services:  
+
+  demon-extract:
+    image: andrewjouffray/feature_extraction_model:latest
+    restart: "no"
+    environment:
+      - DATASET_NAME=weeds1-new
+      - LABEL_NAME=field-new
+      - PATH_TO_VIDEOS=field_weeds
+    volumes:
+    - /run/media/andrew/research/workdir_weeds1/raw_input_data/:/videos
+    - /run/media/andrew/research/workdir_salient_object/exported11/:/models
+    command: bash -c "sleep 5 && ./scripts/feature_extraction/run.sh"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [gpu]

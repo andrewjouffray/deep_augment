@@ -1,0 +1,19 @@
+version: '3'
+
+services:  
+
+  demon:
+    image: andrewjouffray/deep_augment_training_mask:latest
+    restart: "no"
+    environment:
+      - TIMEOUT=10800
+      - PREPROCESSING=FALSE
+      - EXPORT_ONLY=TRUE
+    volumes:
+    - /run/media/andrew/research/workdir_salient_object:/workdir
+    command: bash -c "sleep 5 && ./scripts/start.sh"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [gpu]

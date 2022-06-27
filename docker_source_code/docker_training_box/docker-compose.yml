@@ -1,0 +1,21 @@
+version: '3'
+
+services:  
+
+  web:
+    image: andrewjouffray/deep_augment_training_box:latest
+    restart: "no"
+    environment:
+      - TIMEOUT=45000
+      - PREPROCESSING=FALSE
+      - TRAINING=FALSE
+      - EXPORT=TRUE
+      - TEST=TRUE
+    volumes:
+    - /run/media/andrew/70C2E801236FA6FA/deepaugment_paper_test:/workdir
+    command: bash -c "sleep 1 && ./scripts/start.sh"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [gpu]

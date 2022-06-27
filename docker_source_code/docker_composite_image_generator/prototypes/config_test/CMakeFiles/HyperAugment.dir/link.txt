@@ -1,0 +1,2 @@
+/usr/bin/ar qc libHyperAugment.a CMakeFiles/HyperAugment.dir/src/Dataset.cpp.o
+/usr/bin/ranlib libHyperAugment.a

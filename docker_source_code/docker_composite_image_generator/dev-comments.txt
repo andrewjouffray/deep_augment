@@ -1,0 +1,5 @@
+
+[17/01/2021] MainTest: some of the outputted images are buggey might be due to two threads trying to access the background image at the same time, we could
+check if the same happends when we have a lot of different backgorund images to choose from
+
+[27/03/2021] Label: still need to update all the probablity definition to have Label:: stuff infront 

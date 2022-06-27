@@ -1,0 +1,5 @@
+/home/andrewj/Projects/HyperAugment/prototypes/config_test/CMakeFiles/rebuild_cache.dir
+/home/andrewj/Projects/HyperAugment/prototypes/config_test/CMakeFiles/edit_cache.dir
+/home/andrewj/Projects/HyperAugment/prototypes/config_test/CMakeFiles/maintest.dir
+/home/andrewj/Projects/HyperAugment/prototypes/config_test/CMakeFiles/tinyxml.dir
+/home/andrewj/Projects/HyperAugment/prototypes/config_test/CMakeFiles/HyperAugment.dir
