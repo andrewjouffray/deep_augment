@@ -32,16 +32,23 @@ public:
         int canvas_per_frame = 4;
         int max_objects = 5;
 
+		// annotation save options
+		bool save_masks_png = true;
+		bool save_masks_json = true;
+		bool save_bnd_box = true;
+
         // paths and names of folders
         string outputPath;
         string datasetName;
-	string inputPath;
-	string backgroundPath;
-	vector<string> labels;
-	vector<string> backgrounds;
-        string masks;
+		string inputPath;
+		string backgroundPath;
+		vector<string> labels;
+		vector<string> backgrounds;
+        string masks_json;
+		string masks_png;
         string imgs;
         string xml;
+
 
 	Dataset(string pathToYeet);
 
@@ -66,6 +73,8 @@ public:
 	vector<vector<string>> parseFile(string pathToYeet);
 
 	void setSettings (vector<vector<string>> file);
+
+	void create_label_map();
 
 };
 

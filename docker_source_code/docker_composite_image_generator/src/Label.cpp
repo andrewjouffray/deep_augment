@@ -17,7 +17,7 @@ Step5: Save the Canvases.jpg Masks.jpg and Roi.Label::xml files
 */
 #include "../include/Label.h"
 
-Label::Label(string label, string dataset, string output, int affine, int saturation, int bright, int blurr, int lowRes, int canvasQt, int max_obj, vector<string>* input, vector<string>* background, bool debugArg){
+Label::Label(string label, string dataset, string output, int affine, int saturation, int bright, int blurr, int lowRes, int canvasQt, int max_obj, vector<string>* input, vector<string>* background, bool save_bnd_box, bool save_masks_png, bool save_masks_json, bool debugArg){
 
 	// pointer to the background array;
 	Label::backgrounds = background;
@@ -36,14 +36,19 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 	Label::canvas_per_frame = canvasQt;
 	Label::max_objects = max_obj;
 
-	Label::masks = Label::outputPath + "masks/";
-	Label::imgs = Label::outputPath + "imgs/";
-	Label::xml = Label::outputPath + "xml/";
-	
-	Label::debug= debugArg;
-	
+	Label::save_bnd_box = save_bnd_box;
+	Label::save_masks_json = save_masks_json;
+	Label::save_masks_png = save_masks_png;
 
 
+	// forgot why I am redefining them here
+	Label::masks_png = Label::outputPath + "masks_png/";
+	Label::masks_json = Label::outputPath + "masks_json/";
+	Label::imgs = Label::outputPath + "images/";
+	Label::xml = Label::outputPath + "bnd_box_xml/";
+	
+	Label::debug = debugArg;
+	
 	// for each input file
 	for(int i = 0; i < Label::inputs->size(); i ++){
 
@@ -63,23 +68,21 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 		#pragma omp parallel    // start the parallel region
 		{
 
-                	#pragma omp single  // let the while loop execute by one thread and generate tasks
-                	while (1){
+            #pragma omp single  // let the while loop execute by one thread and generate tasks
+            while (1){
 
-                        	if (!cap.read(frame)){
+				if (!cap.read(frame)){
 
-                                	cout << "> (Label) No more frames." << endl;
-                                	break;
+						cout << "> (Label) No more frames." << endl;
+						break;
 
-                        	}
-
-
+				}
 				//cout << omp_get_max_threads() << endl;
 
-                        	#pragma omp task
-                        	{
+				#pragma omp task
+				{
 					int id = omp_get_thread_num();
-                                	for(int i = 0; i < Label::canvas_per_frame; i ++){
+					for(int i = 0; i < Label::canvas_per_frame; i ++){
 
 						if(Label::debug){ 
 							cout << "giving task to thread "<< to_string(id) << endl;
@@ -87,22 +90,29 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 
 						cv::Mat background = Label::getRandomBackground();
 
-                                        	// creates and saves a canvas
-                                        	Canvas canvas(frame, background, Label::max_objects, Label::obj_affineProb, Label::obj_changeSatProb ,Label::can_changeBrightProb, Label::can_blurrProb, Label::can_lowerRes, Label::debug, &colors);
-                                        	int64_t  current = timeSinceEpochMillisec();
+						// creates and saves a canvas
+						Canvas canvas(frame, background, Label::max_objects, Label::obj_affineProb, Label::obj_changeSatProb ,Label::can_changeBrightProb, Label::can_blurrProb, Label::can_lowerRes, Label::debug, &colors);
+						int64_t  current = timeSinceEpochMillisec();
 
-                                        	string name = to_string(current) + "hpa" + to_string(id);
+						string name = to_string(current) + "hpa" + to_string(id);
 
 						cv::Mat img = canvas.getCanvas();
-                                        	saveImg(img, name);
-						//saveMask(canvas.getMask(), name);
-						//saveXML(canvas.getRois(), name, img);
+						saveImg(img, name);
 
-						// draw the point outline on the image to make sure it is accurate
-						vector<vector<cv::Point>> contours = canvas.calculateOutline();
+						if (Label::save_masks_png){
+							saveMask(canvas.getMask(), name);
+						}
 
-						saveJson(contours, img, name);
+						if (Label::save_bnd_box){
+							saveXML(canvas.getRois(), name, img);
+						}
 
+						if (Label::save_masks_json){
+							// draw the point outline on the image to make sure it is accurate
+							vector<vector<cv::Point>> contours = canvas.calculateOutline();
+							saveJson(contours, img, name);
+						}
+				
 						// show the outline on top of the object for debugging
 						if (Label::debug){
 							for (int j = 0; j < contours.size(); j++){
@@ -122,19 +132,13 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 
 						}
 
+					}
 
+				}
 
-                                	}
+			} // end of while loop and single region
 
-
-
-                        	}
-
-                	} // end of while loop and single region
-
-                // at this point we also wait until all tasks that were created have finished
-
-        	} // end of parallel region
+		} // end of parallel region
 
 
         uint64_t  end = timeSinceEpochMillisec();
@@ -158,7 +162,7 @@ void Label::saveImg(cv::Mat img, string name){
 
 void Label::saveMask(cv::Mat mask, string name){
 
-	string path = Label::masks + name + ".png";
+	string path = Label::masks_png + name + ".png";
 	cv::imwrite(path, mask);
 
 }
@@ -206,78 +210,78 @@ void Label::saveXML(vector<vector<int>> rois, string name, cv::Mat img){
 
 
         annotation->LinkEndChild( folder );
-                folder->LinkEndChild(folderName);
+			folder->LinkEndChild(folderName);
 
         annotation->LinkEndChild( filename );
-                filename->LinkEndChild(fileNameText);
+			filename->LinkEndChild(fileNameText);
 
         annotation->LinkEndChild( path );
-                path->LinkEndChild(pathText);
+			path->LinkEndChild(pathText);
 
         annotation->LinkEndChild( source );
-                source->LinkEndChild( database );
-                        database->LinkEndChild( databaseName );
+			source->LinkEndChild( database );
+					database->LinkEndChild( databaseName );
 
         annotation->LinkEndChild( size );
-                size->LinkEndChild( width );
-                        width->LinkEndChild( widthVal );
-                size->LinkEndChild( height );
-                        height->LinkEndChild( heightVal );
-                size->LinkEndChild( depth );
-                        depth->LinkEndChild( depthVal );
+			size->LinkEndChild( width );
+				width->LinkEndChild( widthVal );
+			size->LinkEndChild( height );
+				height->LinkEndChild( heightVal );
+			size->LinkEndChild( depth );
+				depth->LinkEndChild( depthVal );
 
         annotation->LinkEndChild( segmented );
-                segmented->LinkEndChild( segmentedVal );
+			segmented->LinkEndChild( segmentedVal );
 
         // add all the objects here might need to create them in the loop
         for(vector<int> roi : rois){
 
-                TiXmlElement * object = new TiXmlElement( "object" );
-                TiXmlElement * name = new TiXmlElement( "name" );
-                TiXmlElement * pose = new TiXmlElement( "pose" );
-                TiXmlElement * truncated = new TiXmlElement( "truncated" );
-                TiXmlElement * difficult = new TiXmlElement( "difficult" );
-                TiXmlElement * bndbox = new TiXmlElement( "bndbox" );
-                TiXmlElement * xmin = new TiXmlElement( "xmin" );
-                TiXmlElement * ymin = new TiXmlElement( "ymin" );
-                TiXmlElement * xmax = new TiXmlElement( "xmax" );
-                TiXmlElement * ymax = new TiXmlElement( "ymax" );
+			TiXmlElement * object = new TiXmlElement( "object" );
+			TiXmlElement * name = new TiXmlElement( "name" );
+			TiXmlElement * pose = new TiXmlElement( "pose" );
+			TiXmlElement * truncated = new TiXmlElement( "truncated" );
+			TiXmlElement * difficult = new TiXmlElement( "difficult" );
+			TiXmlElement * bndbox = new TiXmlElement( "bndbox" );
+			TiXmlElement * xmin = new TiXmlElement( "xmin" );
+			TiXmlElement * ymin = new TiXmlElement( "ymin" );
+			TiXmlElement * xmax = new TiXmlElement( "xmax" );
+			TiXmlElement * ymax = new TiXmlElement( "ymax" );
 
-                TiXmlText * objectName = new TiXmlText( Label::labelName.c_str() );
-                TiXmlText * objectPose = new TiXmlText( "Unspecified" );
-                TiXmlText * objectTruncated = new TiXmlText( "0" );
-                TiXmlText * objectDifficult = new TiXmlText( "0" );
+			TiXmlText * objectName = new TiXmlText( Label::labelName.c_str() );
+			TiXmlText * objectPose = new TiXmlText( "Unspecified" );
+			TiXmlText * objectTruncated = new TiXmlText( "0" );
+			TiXmlText * objectDifficult = new TiXmlText( "0" );
 
-                string x1 = to_string(roi[0]);
-                string y1 = to_string(roi[1]);
-                string x2 = to_string(roi[2]);
-                string y2 = to_string(roi[3]);
+			string x1 = to_string(roi[0]);
+			string y1 = to_string(roi[1]);
+			string x2 = to_string(roi[2]);
+			string y2 = to_string(roi[3]);
 
-                TiXmlText * objectXmin = new TiXmlText( x1.c_str() );
-                TiXmlText * objectYmin = new TiXmlText( y1.c_str() );
-                TiXmlText * objectXmax = new TiXmlText( x2.c_str() );
-                TiXmlText * objectYmax = new TiXmlText( y2.c_str() );
+			TiXmlText * objectXmin = new TiXmlText( x1.c_str() );
+			TiXmlText * objectYmin = new TiXmlText( y1.c_str() );
+			TiXmlText * objectXmax = new TiXmlText( x2.c_str() );
+			TiXmlText * objectYmax = new TiXmlText( y2.c_str() );
 
 
 
-                annotation->LinkEndChild( object );
-                        object->LinkEndChild(name);
-                                name->LinkEndChild(objectName);
-                        object->LinkEndChild(pose);
-                                pose->LinkEndChild(objectPose);
-                        object->LinkEndChild(truncated);
-                                truncated->LinkEndChild(objectTruncated);
-                        object->LinkEndChild(difficult);
-                                difficult->LinkEndChild(objectDifficult);
-                        object->LinkEndChild(bndbox);
-                                bndbox->LinkEndChild(xmin);
-                                        xmin->LinkEndChild(objectXmin);
-                                bndbox->LinkEndChild(ymin);
-                                        ymin->LinkEndChild(objectYmin);
-                                bndbox->LinkEndChild(xmax);
-                                        xmax->LinkEndChild(objectXmax);
-                                bndbox->LinkEndChild(ymax);
-                                        ymax->LinkEndChild(objectYmax);
+			annotation->LinkEndChild( object );
+				object->LinkEndChild(name);
+					name->LinkEndChild(objectName);
+				object->LinkEndChild(pose);
+					pose->LinkEndChild(objectPose);
+				object->LinkEndChild(truncated);
+					truncated->LinkEndChild(objectTruncated);
+				object->LinkEndChild(difficult);
+					difficult->LinkEndChild(objectDifficult);
+				object->LinkEndChild(bndbox);
+					bndbox->LinkEndChild(xmin);
+						xmin->LinkEndChild(objectXmin);
+					bndbox->LinkEndChild(ymin);
+						ymin->LinkEndChild(objectYmin);
+					bndbox->LinkEndChild(xmax);
+						xmax->LinkEndChild(objectXmax);
+					bndbox->LinkEndChild(ymax);
+						ymax->LinkEndChild(objectYmax);
 
 
         }
@@ -343,7 +347,7 @@ void Label::saveJson(vector<vector<cv::Point>> contours, cv::Mat img, string nam
 	builder["indentation"] = "   ";
 
 	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-	std::ofstream outputFileStream(Label::imgs + name + ".json");
+	std::ofstream outputFileStream(Label::masks_json + name + ".json");
 	writer -> write(annotation, &outputFileStream);
 	
 }

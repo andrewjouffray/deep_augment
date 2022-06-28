@@ -18,6 +18,9 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 	// creates the output directories to save everything in
 	bool valid = Dataset::createOutputDirs();
 
+        // creates the label map later used for training and testing
+        create_label_map();
+
 	for (string label_path : Dataset::labels){
 
 	
@@ -41,7 +44,7 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 		vector<string> videoFiles = Dataset::getLabelFiles(label_path);
 		cout << videoFiles.size() << endl;
 
-		Label labelObject = Label(labelName, Dataset::datasetName, Dataset::outputPath, Dataset::obj_affineProb , Dataset::obj_changeSatProb, Dataset::can_changeBrightProb, Dataset::can_blurrProb, Dataset::can_lowerRes, Dataset::canvas_per_frame, Dataset::max_objects, &videoFiles, &backgrounds, false);
+		Label labelObject = Label(labelName, Dataset::datasetName, Dataset::outputPath, Dataset::obj_affineProb , Dataset::obj_changeSatProb, Dataset::can_changeBrightProb, Dataset::can_blurrProb, Dataset::can_lowerRes, Dataset::canvas_per_frame, Dataset::max_objects, &videoFiles, &backgrounds, Dataset::save_bnd_box, Dataset::save_masks_png, Dataset::save_masks_json, false);
 
 	}
 
@@ -96,8 +99,8 @@ bool Dataset::createOutputDirs(){
 
         }
 
-        if(dirExists(Dataset::masks.c_str())){
-                cout << "> Output for Dataset::masks/ already exists, using existing directory" << endl;
+        if(dirExists(Dataset::masks_png.c_str())){
+                cout << "> Output for Dataset::masks_png/ already exists, using existing directory" << endl;
         }else{
 
                 if(fs::create_directory(Dataset::masks)){
@@ -105,7 +108,22 @@ bool Dataset::createOutputDirs(){
                 }else{
 
                         cout << "> Label: could not create " << Dataset::masks << endl;
-			string message = "Error: Could not create masks path.";
+			string message = "Error: Could not create masks_png path.";
+                        throw message;
+                }
+
+        }
+
+        if(dirExists(Dataset::masks_json.c_str())){
+        cout << "> Output for Dataset::masks_json/ already exists, using existing directory" << endl;
+        }else{
+
+                if(fs::create_directory(Dataset::masks)){
+                        cout << "> Label: created " << Dataset::masks << endl;
+                }else{
+
+                        cout << "> Label: could not create " << Dataset::masks << endl;
+			string message = "Error: Could not create masks_json path.";
                         throw message;
                 }
 
@@ -446,9 +464,33 @@ void Dataset::setSettings (vector<vector<string>> file){
 			}
 
                 }
+                else if (word.compare("save_masks_png") == 0){
+                        string save_masks_png_str = stoi(line.at(1));
+                        if (save_masks_png_str == "True" || save_masks_png_str == "true"){
+                                Dataset::save_masks_png = true;
+                        }else{
+                                Dataset::save_masks_png = false;
+                        }
+                }
+                else if (word.compare("save_masks_json") == 0){
+                        string save_masks_json_str = stoi(line.at(1));
+                        if (save_masks_json_str == "True" || save_masks_json_str == "true"){
+                                Dataset::save_masks_json = true;
+                        }else{
+                                Dataset::save_masks_json = false;
+                        }
+                }
+                else if (word.compare("save_bnd_box") == 0){
+                        string save_bnd_box_str = stoi(line.at(1));
+                        if (save_bnd_box_str == "True" || save_bnd_box_str == "true"){
+                                Dataset::save_bnd_box = true;
+                        }else{
+                                Dataset::save_bnd_box = false;
+                        }
+                }
                 else if(word.compare("//") == 0){
 
-                        //do nothing
+                        //do nothing (comments in the config file)
                 }
 
 
@@ -464,14 +506,19 @@ void Dataset::setSettings (vector<vector<string>> file){
 	}
 
 	// three folders to be created
-        Dataset::masks = Dataset::outputPath + "masks/";
-        Dataset::imgs = Dataset::outputPath + "imgs/";
-        Dataset::xml = Dataset::outputPath + "xml/";
+        Dataset::masks_json = Dataset::outputPath + "masks_json/";
+        Dataset::masks_png = Dataset::outputPath + "masks_png/";
+        Dataset::imgs = Dataset::outputPath + "images/";
+        Dataset::xml = Dataset::outputPath + "bnd_box_xml/";
 
 	// prints out all the settings allowing the user to check that everything is ok
         cout << "\n========================= Dataset Configuration ==================================" << endl;
         cout << "> readFile: path to background:                             " << Dataset::backgroundPath << endl;
         cout << "> readFile: output path:                                    " << Dataset::outputPath << endl;
+        cout << "> readFile: images save path:                             " << Dataset::imgs << endl;
+        cout << "> readFile: bnb box xml save path:                        " << Dataset::xml << endl;
+        cout << "> readFile: masks json save path:                         " << Dataset::masks_json << endl;
+        cout << "> readFile: masks png save path:                          " << Dataset::masks_png << endl;
         cout << "> readFile: dataset name:                                   " << Dataset::datasetName  << endl;
         cout << "> readFile: number of canvases created per video frame:     " << Dataset::canvas_per_frame << endl;
         cout << "> readFile: max number of objects to be put in each canvas: " << Dataset::max_objects << endl;
@@ -485,5 +532,45 @@ void Dataset::setSettings (vector<vector<string>> file){
 
 }
 
+void Dataset::create_label_map(){
 
+        int i = 0;
+
+        vector<string> lines;
+
+        // creates the label map
+        for (string label_path : Dataset::labels){
+
+	
+	        string labelName = Dataset::splitPath(label_path);
+
+                // create an item
+                lines.push_back("item {");
+                lines.push_back("       id : " + i);
+                lines.push_back("       name :" + labelName);
+                lines.push_back("}");
+                
+
+        }
+
+        // writes the label map
+        try {
+                //open file for writing
+                ofstream fw(Dataset::outputPath + "label.pbtxt";, std::ofstream::out);
+                //check if file was successfully opened for writing
+                if (fw.is_open())
+                {
+                        //store array contents to text file
+                        for (int j = 0; j < arraySize; j++) {
+                                fw << lines.at(j) << "\n";
+                        }
+                        fw.close();
+                }
+                else cout << "Problem with opening file";
+        }
+        catch (const char* msg) {
+                cerr << msg << endl;
+        }
+
+}
 

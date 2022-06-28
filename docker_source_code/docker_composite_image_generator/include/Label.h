@@ -37,9 +37,14 @@ public:
         string datasetName;
 	vector<string>*	 backgrounds;
 	vector<string>* inputs;
-        string masks;
+	string masks_png;
+	string masks_json;
         string imgs;
         string xml;
+        
+        bool save_bnd_box;
+        bool save_masks_png;
+        bool save_masks_json;
 
 	bool debug;
 
