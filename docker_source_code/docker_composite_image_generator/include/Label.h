@@ -48,7 +48,7 @@ public:
 
 	bool debug;
 
-Label(string label, string dataset, string output, int affine, int saturation, int bright, int blurr, int lowRes, int canvasQt, int max_obj, vector<string>* input, vector<string>* background, bool debugArg);
+Label(string label, string dataset, string output, int affine, int saturation, int bright, int blurr, int lowRes, int canvasQt, int max_obj, vector<string>* input, vector<string>* background,bool save_bnd_box, bool save_masks_png, bool save_masks_json, bool debugArg);
 
 void saveImg(cv::Mat img, string name);
 

@@ -2,7 +2,7 @@ version: '3'
 
 services:  
 
-  demon:
+  training_mask:
     image: andrewjouffray/deep_augment_training_mask:latest
     restart: "no"
     environment:

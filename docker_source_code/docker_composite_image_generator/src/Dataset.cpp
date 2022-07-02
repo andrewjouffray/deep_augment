@@ -103,11 +103,11 @@ bool Dataset::createOutputDirs(){
                 cout << "> Output for Dataset::masks_png/ already exists, using existing directory" << endl;
         }else{
 
-                if(fs::create_directory(Dataset::masks)){
-                        cout << "> Label: created " << Dataset::masks << endl;
+                if(fs::create_directory(Dataset::masks_png)){
+                        cout << "> Label: created " << Dataset::masks_png << endl;
                 }else{
 
-                        cout << "> Label: could not create " << Dataset::masks << endl;
+                        cout << "> Label: could not create " << Dataset::masks_png << endl;
 			string message = "Error: Could not create masks_png path.";
                         throw message;
                 }
@@ -118,11 +118,11 @@ bool Dataset::createOutputDirs(){
         cout << "> Output for Dataset::masks_json/ already exists, using existing directory" << endl;
         }else{
 
-                if(fs::create_directory(Dataset::masks)){
-                        cout << "> Label: created " << Dataset::masks << endl;
+                if(fs::create_directory(Dataset::masks_json)){
+                        cout << "> Label: created " << Dataset::masks_json << endl;
                 }else{
 
-                        cout << "> Label: could not create " << Dataset::masks << endl;
+                        cout << "> Label: could not create " << Dataset::masks_json << endl;
 			string message = "Error: Could not create masks_json path.";
                         throw message;
                 }
@@ -465,7 +465,7 @@ void Dataset::setSettings (vector<vector<string>> file){
 
                 }
                 else if (word.compare("save_masks_png") == 0){
-                        string save_masks_png_str = stoi(line.at(1));
+                        string save_masks_png_str = line.at(1);
                         if (save_masks_png_str == "True" || save_masks_png_str == "true"){
                                 Dataset::save_masks_png = true;
                         }else{
@@ -473,7 +473,7 @@ void Dataset::setSettings (vector<vector<string>> file){
                         }
                 }
                 else if (word.compare("save_masks_json") == 0){
-                        string save_masks_json_str = stoi(line.at(1));
+                        string save_masks_json_str = line.at(1);
                         if (save_masks_json_str == "True" || save_masks_json_str == "true"){
                                 Dataset::save_masks_json = true;
                         }else{
@@ -481,7 +481,7 @@ void Dataset::setSettings (vector<vector<string>> file){
                         }
                 }
                 else if (word.compare("save_bnd_box") == 0){
-                        string save_bnd_box_str = stoi(line.at(1));
+                        string save_bnd_box_str = line.at(1);
                         if (save_bnd_box_str == "True" || save_bnd_box_str == "true"){
                                 Dataset::save_bnd_box = true;
                         }else{
@@ -546,22 +546,23 @@ void Dataset::create_label_map(){
 
                 // create an item
                 lines.push_back("item {");
-                lines.push_back("       id : " + i);
-                lines.push_back("       name :" + labelName);
+                lines.push_back("       id: " + to_string(i));
+                lines.push_back("       name:" + labelName);
                 lines.push_back("}");
                 
+                i++
 
         }
 
         // writes the label map
         try {
                 //open file for writing
-                ofstream fw(Dataset::outputPath + "label.pbtxt";, std::ofstream::out);
+                ofstream fw(Dataset::outputPath + "label.pbtxt", std::ofstream::out);
                 //check if file was successfully opened for writing
                 if (fw.is_open())
                 {
                         //store array contents to text file
-                        for (int j = 0; j < arraySize; j++) {
+                        for (int j = 0; j < lines.size(); j++) {
                                 fw << lines.at(j) << "\n";
                         }
                         fw.close();

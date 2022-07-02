@@ -20,4 +20,6 @@ RUN DEBIAN_FRONTEND=noninteractive sudo apt install -y libopencv-dev python3-ope
 
 RUN cd build && cmake .. && make
 
+RUN sudo chmod +x /code/start.sh
+
 

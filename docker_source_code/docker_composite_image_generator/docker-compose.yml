@@ -1,0 +1,13 @@
+version: '3'
+
+services:  
+
+  cig:
+    image: andrewjouffray/composite_image_generator:latest
+    restart: "no"
+    environment:
+      - DATAPATH=/workdir/raw_input_data/weeds1-new
+    volumes:
+    - /run/media/andrew/research/workdir_weeds1:/workdir
+    command: bash -c "cd /code/ && pwd && ls -l && ./start.sh"
+

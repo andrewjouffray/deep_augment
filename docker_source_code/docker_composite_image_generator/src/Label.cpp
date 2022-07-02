@@ -111,26 +111,28 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 							// draw the point outline on the image to make sure it is accurate
 							vector<vector<cv::Point>> contours = canvas.calculateOutline();
 							saveJson(contours, img, name);
-						}
-				
-						// show the outline on top of the object for debugging
-						if (Label::debug){
-							for (int j = 0; j < contours.size(); j++){
 
-								vector<cv::Point> outline = contours.at(j);
+							// show the outline on top of the object for debugging
+							if (Label::debug){
+								for (int j = 0; j < contours.size(); j++){
 
-								cout << "Size of point outline (multiply by 2) " << outline.size() << endl;
-							
-								// draw the points
-								cv::fillPoly(img, outline, cv::Scalar(255, 255, 255), 8, 0);	
+									vector<cv::Point> outline = contours.at(j);
+
+									cout << "Size of point outline (multiply by 2) " << outline.size() << endl;
+								
+									// draw the points
+									cv::fillPoly(img, outline, cv::Scalar(255, 255, 255), 8, 0);	
+
+								}
+
+								// show the image for debugging
+								cv::imshow("image with filled polys", img);
+								int k = cv::waitKey(0);
 
 							}
-
-							// show the image for debugging
-							cv::imshow("image with filled polys", img);
-							int k = cv::waitKey(0);
-
 						}
+				
+
 
 					}
 
