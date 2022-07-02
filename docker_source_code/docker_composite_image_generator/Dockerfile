@@ -16,6 +16,7 @@ RUN apt install -y sudo
 
 RUN sudo apt install -y  build-essential cmake git pkg-config libgtk-3-dev libjsoncpp-dev
 
+
 RUN DEBIAN_FRONTEND=noninteractive sudo apt install -y libopencv-dev python3-opencv
 
 RUN cd build && cmake .. && make

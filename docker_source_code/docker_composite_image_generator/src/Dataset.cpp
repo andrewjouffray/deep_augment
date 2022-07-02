@@ -3,6 +3,7 @@
 
 Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 
+        // this sets the input path to a default value of "./"
 	Dataset::inputPath = pathToDataset;
 
 	// reads the config file and sets all the parameters
@@ -488,6 +489,11 @@ void Dataset::setSettings (vector<vector<string>> file){
                                 Dataset::save_bnd_box = false;
                         }
                 }
+                else if (word.compare("input_path") == 0){
+
+                        Dataset::inputPath = line.at(1);
+
+                }
                 else if(word.compare("//") == 0){
 
                         //do nothing (comments in the config file)
@@ -498,7 +504,7 @@ void Dataset::setSettings (vector<vector<string>> file){
 	
 	if (Dataset::outputPath.compare("default") == 0){
 
-		string add_path = "/data/outputs/";
+		string add_path = "/input_data/";
 
 		string current_path = fs::current_path();
 	
@@ -550,7 +556,7 @@ void Dataset::create_label_map(){
                 lines.push_back("       name:" + labelName);
                 lines.push_back("}");
                 
-                i++
+                i++;
 
         }
 
